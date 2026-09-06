@@ -1,0 +1,155 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table User {
+  id uuid [primary key]
+  name varchar [not null]
+  username varchar [not null]
+  password varchar [not null]
+  role varchar [not null]
+}
+
+Table Product {
+  id uuid [primary key]
+  name varchar [not null]
+  stock integer [not null]
+  note varchar [null]
+  modifyAt datetime [null]
+  modifyBy uuid [not null]
+}
+
+Table ModifyStockHistory {
+  id uuid [primary key]
+  time datetime [not null]
+  employeeID uuid [not null]
+  productID uuid [not null]
+  lastStock integer [not null]
+  updatedStock integer [not null]
+}
+
+Table Supplier {
+  id uuid [primary key]
+  name varchar [not null]
+  phoneNumber varchar [not null]
+  address varchar [null]
+}
+
+Table Agent {
+  id uuid [primary key]
+  name varchar [not null]
+  phoneNumber varchar [not null]
+  address varchar [null]
+}
+
+Table Order {
+  id uuid [primary key]
+  agentID uuid [not null]
+  orderAt datetime [not null]
+  deadline datetime [null]
+  status varchar [not null]
+  paymentStatus varchar [not null]
+  note varchar [null]
+}
+
+Table Warehouse {
+  id uuid [primary key]
+  name varchar [not null]
+  address varchar [null]
+}
+
+Table ImportReceive {
+  id uuid [primary key]
+  time varchar [not null]
+  supplierID uuid [not null]
+  warehouseStaffID uuid [not null]
+  managerID uuid [not null]
+  note varchar [null]
+}
+
+Table ExportReceive {
+  id uuid [primary key]
+  time varchar [not null]
+  warehouseStaffID uuid [not null]
+  managerID uuid [not null]
+  orderID uuid [not null]
+  note varchar [null]
+}
+
+Table ProductWarehouse {
+  warehouseID uuid [primary key]
+  productID uuid [primary key]
+  stock integer [not null]
+  note varchar [null]
+  modifyStockAt datetime [null]
+  modifyStockBy uuid [null]
+}
+
+Table WarehouseEmployee {
+  employeeID uuid [primary key]
+  warehouseID uuid [primary key]
+}
+
+Table OrderProduct {
+  productID uuid [primary key]
+  orderID uuid [primary key]
+  quantity integer [not null]
+}
+
+Table ProductImportReceive {
+  importReceiveID uuid [primary key]
+  productID uuid [primary key]
+  warehouseID uuid [primary key]
+  quantity integer [not null]
+}
+
+Table ProductExportReceive {
+  exportReceiveID uuid [primary key]
+  productID uuid [primary key]
+  warehouseID uuid [primary key]
+  quantity integer [not null]
+}
+
+// User < ImportReceive
+Ref: User.id < ImportReceive.warehouseStaffID
+Ref: User.id < ImportReceive.managerID
+
+// User < ExportReceive
+Ref: User.id < ExportReceive.warehouseStaffID
+Ref: User.id < ExportReceive.managerID
+
+// Supplier < ImportReceive
+Ref: Supplier.id < ImportReceive.supplierID
+
+// ImportReceive < ProductImportReceive > ProductWarehouse
+Ref: ImportReceive.id < ProductImportReceive.importReceiveID
+Ref: ProductWarehouse.(productID, warehouseID) < ProductImportReceive.(productID, warehouseID)
+
+// ExportReceive < ProductExportReceive > ProductWarehouse
+Ref: ExportReceive.id < ProductExportReceive.exportReceiveID
+Ref: ProductWarehouse.(productID, warehouseID) < ProductExportReceive.(productID, warehouseID)
+
+// Product < OrderProduct > Order
+Ref: Product.id < OrderProduct.productID
+Ref: Order.id < OrderProduct.orderID
+
+// OrderID < ExportReceive
+Ref: Order.id < ExportReceive.orderID
+
+// Agent - Order
+Ref: Agent.id - Order.agentID
+
+// Product < ModifyStockHistory
+Ref: Product.id < ModifyStockHistory.productID
+
+// User < ModifyStockHistory
+Ref: User.id < ModifyStockHistory.employeeID
+
+// Warehouse < WarehouseEmployee > User
+Ref: Warehouse.id < WarehouseEmployee.warehouseID
+Ref: User.id < WarehouseEmployee.employeeID
+
+// Product < WarehouseProduct > Warehouse
+Ref: Warehouse.id < ProductWarehouse.warehouseID
+Ref: Product.id < ProductWarehouse.productID
+
+
